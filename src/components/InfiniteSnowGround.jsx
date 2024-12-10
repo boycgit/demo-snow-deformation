@@ -8,6 +8,7 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { FogEffect } from "./FogEffect";
+import { useControls } from "leva";
 
 // Utils
 import { lerpAngle } from "../utils/helper-functions";
@@ -33,6 +34,19 @@ const IDLE_ANIMATION = "Armature.001|mixamo.com|Layer0";
 const tempVector = new THREE.Vector3();
 
 const InfiniteSnowWorld = () => {
+  // Leva controls
+  const { customDraw } = useControls({
+    customDraw: {
+      value: false,
+      label: "自定义绘制模式",
+    },
+  });
+
+  // Mouse position state
+  const mouse = useRef(new THREE.Vector2());
+  const raycaster = useRef(new THREE.Raycaster());
+  const isDrawing = useRef(false);
+
   // References for character and chunks
   const characterRef = useRef();
   const characterParentRef = useRef();
@@ -385,6 +399,49 @@ const InfiniteSnowWorld = () => {
     [getNeighboringChunks, chunksRef, saveChunkDeformation]
   );
 
+  // Handle mouse events for drawing
+  useEffect(() => {
+    if (!customDraw) return;
+
+    const handleMouseDown = (event) => {
+      isDrawing.current = true;
+      handleMouseMove(event);
+    };
+
+    const handleMouseUp = () => {
+      isDrawing.current = false;
+    };
+
+    const handleMouseMove = (event) => {
+      if (!isDrawing.current) return;
+
+      const canvas = document.querySelector("canvas");
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      mouse.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.current.setFromCamera(mouse.current, camera);
+      const intersects = raycaster.current.intersectObjects(chunksRef.current);
+
+      if (intersects.length > 0) {
+        const point = intersects[0].point;
+        deformMesh(intersects[0].object, point);
+      }
+    };
+
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [customDraw, camera, deformMesh]);
+
   // Main animation loop
   useFrame((state, delta) => {
     const speed = CHARACTER_SPEED;
@@ -448,21 +505,24 @@ const InfiniteSnowWorld = () => {
 
       characterParentRef.current.getWorldPosition(characterPosition);
 
-      cameraTargetRef.current
-        .copy(characterPosition)
-        .add(new THREE.Vector3(0, 0, 0));
+      // Update camera only when not in custom draw mode
+      if (!customDraw) {
+        cameraTargetRef.current
+          .copy(characterPosition)
+          .add(new THREE.Vector3(0, 0, 0));
 
-      const offsetRotated = cameraOffset
-        .clone()
-        .applyAxisAngle(new THREE.Vector3(0, 0, 0), currentRotation.current);
-      const targetCameraPosition = characterPosition.clone().add(offsetRotated);
+        const offsetRotated = cameraOffset
+          .clone()
+          .applyAxisAngle(new THREE.Vector3(0, 0, 0), currentRotation.current);
+        const targetCameraPosition = characterPosition.clone().add(offsetRotated);
 
-      camera.position.lerp(targetCameraPosition, 0.01);
-      camera.lookAt(
-        cameraTargetRef.current.x,
-        cameraTargetRef.current.y + 7,
-        cameraTargetRef.current.z
-      );
+        camera.position.lerp(targetCameraPosition, 0.01);
+        camera.lookAt(
+          cameraTargetRef.current.x,
+          cameraTargetRef.current.y + 7,
+          cameraTargetRef.current.z
+        );
+      }
 
       // Handle chunk positioning and deformation when moving
       if (isCurrentlyMoving) {

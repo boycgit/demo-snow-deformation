@@ -19,9 +19,9 @@ const Scene = () => {
       <OrbitControls
         makeDefault
         enableDamping={false}
-        enableRotate={false}
-        enableZoom={false}
-        enablePan={false}
+        enableRotate={true}
+        enableZoom={true}
+        enablePan={true}
       />
 
       <FrameLimiter />
