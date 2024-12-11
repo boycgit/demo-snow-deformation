@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+// import { OrbitControls } from "@react-three/drei";
 import InfiniteSnowGround from "./components/InfiniteSnowGround";
 
 import FrameLimiter from "./utils/FPSLimiter";
@@ -16,13 +16,13 @@ const Scene = () => {
       <InfiniteSnowGround />
 
       {/* <Stats /> */}
-      <OrbitControls
+      {/* <OrbitControls
         makeDefault
         enableDamping={false}
         enableRotate={true}
         enableZoom={true}
         enablePan={true}
-      />
+      /> */}
 
       <FrameLimiter />
     </Canvas>

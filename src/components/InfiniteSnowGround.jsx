@@ -5,6 +5,7 @@ import {
   useGLTF,
   useAnimations,
   PositionalAudio,
+  OrbitControls,
 } from "@react-three/drei";
 import * as THREE from "three";
 import { FogEffect } from "./FogEffect";
@@ -25,6 +26,7 @@ const CHUNK_OVERLAP = 0.5;
 const DEFORM_RADIUS = 2.5;
 const WAVE_AMPLITUDE = 0.005;
 const WAVE_FREQUENCY = 4;
+const DRAW_DEFORM_STRENGTH = 0.3;
 
 // Animation Names
 const WALK_ANIMATION = "Armature|mixamo.com|Layer0";
@@ -341,7 +343,7 @@ const InfiniteSnowWorld = () => {
 
   // Function to deform the mesh based on a point of impact
   const deformMesh = useCallback(
-    (mesh, point) => {
+    (mesh, point, isDrawMode = false) => {
       if (!mesh) return;
 
       const neighboringChunks = getNeighboringChunks(point, chunksRef);
@@ -370,7 +372,8 @@ const InfiniteSnowWorld = () => {
               3
             );
 
-            const yOffset = influence * 10;
+            const deformStrength = isDrawMode ? DRAW_DEFORM_STRENGTH : 1;
+            const yOffset = influence * 10 * deformStrength;
             tempVertex.y -=
               yOffset * Math.sin((distance / DEFORM_RADIUS) * Math.PI);
 
@@ -427,7 +430,7 @@ const InfiniteSnowWorld = () => {
 
       if (intersects.length > 0) {
         const point = intersects[0].point;
-        deformMesh(intersects[0].object, point);
+        deformMesh(intersects[0].object, point, true);
       }
     };
 
@@ -593,8 +596,28 @@ const InfiniteSnowWorld = () => {
     }
   });
 
+  // OrbitControls reference
+  const orbitControlsRef = useRef();
+
+  // Update OrbitControls enabled state
+  useEffect(() => {
+    if (orbitControlsRef.current) {
+      orbitControlsRef.current.enabled = !customDraw;
+    }
+  }, [customDraw]);
+
   return (
     <>
+      <OrbitControls
+        ref={orbitControlsRef}
+        enabled={false}
+        enablePan={true}
+        enableZoom={true}
+        enableRotate={true}
+        minDistance={10}
+        maxDistance={100}
+      />
+      
       {snowChunks.map((chunk, index) => (
         <mesh
           key={`${chunk.x}-${chunk.z}`}
