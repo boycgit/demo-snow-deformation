@@ -15,9 +15,9 @@ import { useControls } from "leva";
 import { lerpAngle } from "../utils/helper-functions";
 
 // Constants for world and character configuration
-const CHUNK_SIZE = 50;
+const CHUNK_SIZE = 100;
 const CHUNKS_PER_SIDE = 1;
-const GRID_RESOLUTION = 64;
+const GRID_RESOLUTION = 128;
 const CHARACTER_SPEED = 12;
 const CHUNK_UNLOAD_DISTANCE = CHUNK_SIZE * 3;
 const CHUNK_OVERLAP = 0.5;
