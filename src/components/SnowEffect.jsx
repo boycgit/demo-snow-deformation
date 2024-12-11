@@ -46,9 +46,10 @@ function addSnowFlakes() {
     return particles;
 }
 
-const SnowEffect = () => {
+const SnowEffect = ({ show = true }) => {
     const snowRef = useRef();
     const snowflakes = useRef(null);
+    const isVisible = useRef(show);
 
     useEffect(() => {
         // 只在组件挂载时生成一次雪花
@@ -56,6 +57,12 @@ const SnowEffect = () => {
             snowflakes.current = addSnowFlakes();
             snowRef.current.add(snowflakes.current);
         }
+
+        // 更新可见性
+        if (snowflakes.current) {
+            snowflakes.current.visible = show;
+        }
+        isVisible.current = show;
 
         // 组件卸载时清理
         return () => {
@@ -67,38 +74,44 @@ const SnowEffect = () => {
         };
     }, []);
 
-    useFrame(() => {
+    // 监听 show 属性变化
+    useEffect(() => {
         if (snowflakes.current) {
-            const positions = snowflakes.current.geometry.attributes.position;
-            const velocities = snowflakes.current.geometry.attributes.velocity;
+            snowflakes.current.visible = show;
+        }
+        isVisible.current = show;
+    }, [show]);
 
-            for (let i = 0; i < positions.count; i++) {
-                // 更新雪花位置
-                positions.array[i * 3] += velocities.array[i * 3];     // x
-                positions.array[i * 3 + 1] -= velocities.array[i * 3 + 1]; // y (下落)
-                positions.array[i * 3 + 2] += velocities.array[i * 3 + 2]; // z
+    useFrame(() => {
+        // 只在可见时更新动画
+        if (!isVisible.current || !snowflakes.current) return;
 
-                // 如果雪花落到地面以下，重置到顶部
-                if (positions.array[i * 3 + 1] < 0) {
-                    positions.array[i * 3 + 1] = 750;
-                }
+        const positions = snowflakes.current.geometry.attributes.position;
+        const velocities = snowflakes.current.geometry.attributes.velocity;
 
-                // 处理x和z方向的边界
-                if (Math.abs(positions.array[i * 3]) > 500) {
-                    positions.array[i * 3] *= -0.95;
-                }
-                if (Math.abs(positions.array[i * 3 + 2]) > 500) {
-                    positions.array[i * 3 + 2] *= -0.95;
-                }
+        for (let i = 0; i < positions.count; i++) {
+            positions.array[i * 3] += velocities.array[i * 3];     // x
+            positions.array[i * 3 + 1] -= velocities.array[i * 3 + 1]; // y (下落)
+            positions.array[i * 3 + 2] += velocities.array[i * 3 + 2]; // z
+
+            if (positions.array[i * 3 + 1] < 0) {
+                positions.array[i * 3 + 1] = 750;
             }
 
-            positions.needsUpdate = true;
+            if (Math.abs(positions.array[i * 3]) > 500) {
+                positions.array[i * 3] *= -0.95;
+            }
+            if (Math.abs(positions.array[i * 3 + 2]) > 500) {
+                positions.array[i * 3 + 2] *= -0.95;
+            }
         }
+
+        positions.needsUpdate = true;
     });
 
     return (
         <group ref={snowRef}>
-            {/* 移除原来的 mesh，因为我们现在使用 Points 来渲染雪花 */}
+            {/* Points 渲染由 addSnowFlakes 处理 */}
         </group>
     );
 };

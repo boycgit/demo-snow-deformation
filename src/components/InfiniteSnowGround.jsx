@@ -10,6 +10,7 @@ import {
 import * as THREE from "three";
 import { FogEffect } from "./FogEffect";
 import { useControls } from "leva";
+import SnowEffect from "./SnowEffect";
 
 // Utils
 import { lerpAngle } from "../utils/helper-functions";
@@ -37,7 +38,7 @@ const tempVector = new THREE.Vector3();
 
 const InfiniteSnowWorld = () => {
   // Leva controls
-  const { customDraw, enableCameraFollow } = useControls({
+  const { customDraw, enableCameraFollow, showSnow } = useControls({
     customDraw: {
       value: false,
       label: "自定义绘制模式",
@@ -46,6 +47,10 @@ const InfiniteSnowWorld = () => {
       value: true,
       label: "开启相机跟随",
     },
+    showSnow: {
+      value: true,
+      label: "开启下雪效果",
+    }
   });
 
   // Mouse position state
@@ -614,7 +619,7 @@ const InfiniteSnowWorld = () => {
     <>
       <OrbitControls
         ref={orbitControlsRef}
-        enabled={false}
+        enabled={!customDraw}
         enablePan={true}
         enableZoom={true}
         enableRotate={true}
@@ -622,13 +627,14 @@ const InfiniteSnowWorld = () => {
         maxDistance={300}
       />
       
+      <SnowEffect show={showSnow} />
+
       {snowChunks.map((chunk, index) => (
         <mesh
           key={`${chunk.x}-${chunk.z}`}
           ref={(el) => {
             if (el) {
               chunksRef.current[index] = el;
-              // Save the original position of the chunk for resetting deformations
               if (!el.geometry.userData.originalPosition) {
                 el.geometry.userData.originalPosition =
                   el.geometry.attributes.position.array.slice();
