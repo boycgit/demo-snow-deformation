@@ -37,7 +37,7 @@ export function FogEffect() {
       <planeGeometry args={[1000, 1000, 1, 1]} />
       <fogMaterial
         uColor={new THREE.Color("#ffffff")}
-        uRadius={0.05}
+        uRadius={0.06}
         transparent
         depthWrite={false}
       />

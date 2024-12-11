@@ -23,8 +23,8 @@ const CHUNK_UNLOAD_DISTANCE = CHUNK_SIZE * 3;
 const CHUNK_OVERLAP = 0.5;
 
 // Constants for snow deformation
-const DEFORM_RADIUS = 2.5;
-const WAVE_AMPLITUDE = 0.005;
+const DEFORM_RADIUS = 2.0;
+const WAVE_AMPLITUDE = 0.003;
 const WAVE_FREQUENCY = 4;
 const DRAW_DEFORM_STRENGTH = 0.3;
 
@@ -37,10 +37,14 @@ const tempVector = new THREE.Vector3();
 
 const InfiniteSnowWorld = () => {
   // Leva controls
-  const { customDraw } = useControls({
+  const { customDraw, enableCameraFollow } = useControls({
     customDraw: {
       value: false,
       label: "自定义绘制模式",
+    },
+    enableCameraFollow: {
+      value: true,
+      label: "开启相机跟随",
     },
   });
 
@@ -508,8 +512,8 @@ const InfiniteSnowWorld = () => {
 
       characterParentRef.current.getWorldPosition(characterPosition);
 
-      // Update camera only when not in custom draw mode
-      if (!customDraw) {
+      // Update camera only when camera follow is enabled and not in custom draw mode
+      if (enableCameraFollow && !customDraw) {
         cameraTargetRef.current
           .copy(characterPosition)
           .add(new THREE.Vector3(0, 0, 0));
@@ -615,7 +619,7 @@ const InfiniteSnowWorld = () => {
         enableZoom={true}
         enableRotate={true}
         minDistance={10}
-        maxDistance={100}
+        maxDistance={300}
       />
       
       {snowChunks.map((chunk, index) => (
