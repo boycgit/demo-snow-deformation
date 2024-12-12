@@ -1,5 +1,7 @@
 # Dynamic Terrain Deformation with React Three Fiber
 
+Fork from [dynamic-terrain-deformation](https://github.com/oguzhantufenk/dynamic-terrain-deformation.git)
+
 _A demo showcasing real-time terrain reshaping through user interactions, optimized for performance and visual fidelity, built with React Three Fiber._
 
 https://github.com/user-attachments/assets/6759ad82-0591-429e-8957-44159911a053
@@ -11,6 +13,11 @@ https://github.com/user-attachments/assets/6759ad82-0591-429e-8957-44159911a053
 ## Installation
 
 Run this demo on a [local server](https://developer.mozilla.org/en-US/docs/Learn/Common_questions/Tools_and_setup/set_up_a_local_testing_server).
+
+```shell
+npm install
+npm run dev
+```
 
 ## Credits
 
